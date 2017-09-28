@@ -1,15 +1,15 @@
-CFLAGS = -Wall
+CFLAGS = -Wall -lreadline
 
 all: shell
 
 shell: shell.o parse.o
 	gcc -o shell shell.o parse.o ${CFLAGS}
 
-shell.o: shell.c shell.h
-	gcc -o shell.o shell.c shell.h parse.h ${CFLAGS}
+shell.o: shell.c shell.h parse.h
+	gcc -c shell.c ${CFLAGS}
 
 parse.o: parse.c parse.h
-	gcc -o parse.o parse.c parse.h ${CFLAGS}
+	gcc -c parse.c ${CFLAGS}
 
 clean:
 	rm *.o shell

@@ -24,7 +24,7 @@ int main(int argc, char **argv){
 
     cmd_line = readline("");
     
-    cmd = parse_command(cmd_line);
+    //cmd = parse_command(cmd_line);
 
     //TODO::
     //record command in history list (GNU readline history ?)
