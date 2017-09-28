@@ -1,1 +1,1 @@
-char* parse_command(char*);
+char* parse_command(char *, char * [], int *);

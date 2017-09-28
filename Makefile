@@ -1,9 +1,10 @@
-CFLAGS = -g -Wall -lreadline
+CFLAGS = -g -Wall
+LFLAGS = /lib/x86_64-linux-gnu/libreadline.so.6
 
 all: shell
 
 shell: shell.o parse.o
-	gcc -o shell shell.o parse.o ${CFLAGS}
+	gcc -o shell shell.o parse.o ${LFLAGS}
 
 shell.o: shell.c shell.h parse.h
 	gcc -c shell.c ${CFLAGS}

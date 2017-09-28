@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 
 char* parse_command(char *args, char *argv[], int *argc){
   char *token, *save_ptr;
@@ -14,9 +15,9 @@ char* parse_command(char *args, char *argv[], int *argc){
 }
 
 void print_cmd(int argc, char *argv[]){
-  int i = 0;
+  int i;
   printf("\nargc: %d", argc);
-  for(i; i<argc; i++){
+  for(i = 0; i<argc; i++){
     printf("\nargv[%d]: %s", i, argv[i]);
   }
 }
