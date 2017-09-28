@@ -1,4 +1,4 @@
-CFLAGS = -Wall -lreadline
+CFLAGS = -g -Wall -lreadline
 
 all: shell
 

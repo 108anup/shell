@@ -1,51 +1,89 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <sys/types.h>
+#include <pwd.h>
 
-char curr_dir[256];
+#define SIZE 256
 
-void print_prompt(){
-  printf("\n%s $> ", curr_dir);
+char curr_dir[SIZE];
+char *history[SIZE];
+char *homedir;
+struct passwd *pw;
+char prompt[SIZE];
+
+void set_prompt(){
+  sprintf(prompt, "\n%s $> ", curr_dir);
 }
 
 void init(){
-  strcpy(curr_dir, "~");
+  pw = getpwuid(getuid());
+  homedir = pw->pw_dir;
+
+  chdir(homedir);
+  getcwd(curr_dir, SIZE);
+  set_prompt();
 }
 
-int main(int argc, char **argv){
+void execute(char *cmd_line){
+
+  pid_t child_pid;
+  char *argv[SIZE];
+  int argc, status;
+
+  char *cmd = parse_command(cmd_line, argv, &argc);
+  //print_cmd(argc, argv);
+
+  if (strcmp(cmd, "ls") == 0){
+    child_pid = fork();
+
+    if(child_pid == 0)
+      execvp("/bin/ls", argv);
+    else
+      wait(child_pid, &status, 0);
+  }
+  else if(strcmp(cmd, "cd") == 0){
+    chdir(argv[1]);
+    getcwd(curr_dir, SIZE);
+    set_prompt();
+  }
+  //TODO:: execute :
+  /*
+    if ( isBuiltInCommand(cmd)){
+    executeBuiltInCommand(cmd);
+    } else {    
+    childPid = fork();
+    if (childPid == 0){
+    executeCommand(cmd); //calls execvp  
+      
+    } else {
+    if (isBackgroundJob(cmd)){
+    record in list of background jobs
+    } else {
+    waitpid (childPid);
+
+    }   
+    }
+    }*/
+}
+
+int main(){
 
   init();
+  int i = 0;
 
-  while (1){
-    int child_pid;
+  while(1){
     char *cmd_line;
 
-    print_prompt();
+    cmd_line = readline(prompt);
 
-    cmd_line = readline("");
-    
-    //cmd = parse_command(cmd_line);
+    int l = strlen(cmd_line);
 
-    //TODO::
-    //record command in history list (GNU readline history ?)
+    history[i] = cmd_line;
+    i = (i + 1) % SIZE;
 
-    //TODO:: execute :
-    /*
-    if ( isBuiltInCommand(cmd)){
-      executeBuiltInCommand(cmd);
-    } else {    
-      childPid = fork();
-      if (childPid == 0){
-        executeCommand(cmd); //calls execvp  
-      
-      } else {
-        if (isBackgroundJob(cmd)){
-          record in list of background jobs
-            } else {
-          waitpid (childPid);
-
-        }   
-      }
-    }*/
+    execute(cmd_line);
   }
+  return 0;
 }
