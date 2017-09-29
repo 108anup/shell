@@ -1,5 +1,5 @@
 CFLAGS = -g -Wall
-LFLAGS = /lib/x86_64-linux-gnu/libreadline.so.6
+LFLAGS = /lib/x86_64-linux-gnu/libreadline.so.7
 
 all: shell
 
