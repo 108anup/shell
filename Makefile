@@ -1,22 +1,75 @@
+# This is the main compiler
+CC = gcc
+
+# Source file directory
+SRCDIR = src
+
+# Include directories
+# Don't remove -I
+INC = -I inc
+
+# Build directory - to store object files
+BUILDDIR = build
+
+# Output directory
+OUTPUT = bin
+
+# Target or Executible file
+TARGET := $(OUTPUT)/shell
+
+# Source file extension
+SRCEXT = c
+
+# Compiler flags
 CFLAGS = -g -Wall
-LFLAGS = /lib/x86_64-linux-gnu/libreadline.so.7
 
-all: shell
+# Include libraries
+LIB = -lreadline
 
-shell: shell.o parse.o
-	gcc -o shell shell.o parse.o ${LFLAGS}
+# Creating list of c files
+SOURCES := $(shell find $(SRCDIR) -type f -name "*.$(SRCEXT)")
 
-shell.o: shell.c shell.h parse.h
-	gcc -c shell.c ${CFLAGS}
+# Creating list of object files to be built
+OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
-parse.o: parse.c parse.h
-	gcc -c parse.c ${CFLAGS}
+# Default task
+all: build link
 
+# Install dependencies
+dependencies:
+	@echo "# Installing dependencies:"
+	@sudo apt-get install libreadline-dev
+	@echo "# Install complete.\n"
+
+# Building (Compiling)
+build: $(OBJECTS)
+
+# Linking
+link: $(TARGET)
+
+# Cleaning binary and object files
 clean:
-	rm *.o shell
+	@echo "# Cleaning"
+	$(RM) -r -v $(BUILDDIR) $(OUTPUT)
 
-cleanall:
-	rm *.o shell cscope.* TAGS
+cleanall: clean
+	$(RM) -v cscope.* TAGS
+
+$(TARGET): $(OBJECTS)
+	@echo "# Linking"
+	@mkdir -p $(OUTPUT)
+	$(CC) $^ -o $(TARGET) $(LIB)
+	@echo "# Executable Binary: $(TARGET)"
+	@echo "# To run just invoke: ./$(TARGET)"
+
+$(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	@if [ ! -f $@ ]; then mkdir -p $@; rm -r $@; fi
+	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
+
+.PHONY: clean TAGS install cscope
+
+help:
+	@echo 'make <all, clean, build, link, dependencies, TAGS, cscope>'
 
 TAGS:
 	find . -name "*.[chS]" | xargs etags -a

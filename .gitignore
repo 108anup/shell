@@ -1,6 +1,6 @@
 *~
-*.o
-shell
 TAGS
 cscope.*
 .vscode/
+bin/
+build/
