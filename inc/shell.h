@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#define HIS_SIZE 5
+#define HIS_SIZE 256
 #define SIZE 256
 
 extern char curr_dir[SIZE];

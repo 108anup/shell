@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include <unistd.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h> 
@@ -22,6 +23,9 @@ void print_history(long int cnt){
   }
 }
 
+/* Handles the history and history n commands. 
+   Prints the most recent n commands issued by the numbers. 
+   If n is omitted, prints all commands issued by the user. */
 void history_action(char *cmd, int argc, char *argv[]){
   if(argv[1] != NULL){
     long int n = strtol(argv[1], NULL, 10);
@@ -41,6 +45,7 @@ void history_action(char *cmd, int argc, char *argv[]){
   }
 }
 
+/* Handles the issue n command. */
 void issue(char *cmd, int argc, char *argv[]){
   if(argv[1] != NULL){
     long int n = strtol(argv[1], NULL, 10);
@@ -60,6 +65,9 @@ void issue(char *cmd, int argc, char *argv[]){
   }
 }
 
+/* Implements rmexcept. 
+   Approach we move the exception files to a tmp_asp directory, then 
+   recursively remove the whole directory and then restore the exception files.*/
 void rmexcept(char *cmd, int argc, char *argv[]){
   pid_t child_pid;
   int status;
@@ -92,6 +100,8 @@ void rmexcept(char *cmd, int argc, char *argv[]){
   }
 }
 
+/* Implements <program_name> and <program_name> n (time in secs).
+   This also supports I/O redirection. */
 void default_action(char *cmd, int argc, char *argv[]){
   pid_t child_pid;
   int status;
@@ -104,7 +114,7 @@ void default_action(char *cmd, int argc, char *argv[]){
 
     child_pid = fork();
 
-    if(child_pid == 0)
+    if(child_pid == 0) //Child
     {
       int o_red_index = -1, i_red_index = -1;
       get_redirection(argv, &o_red_index, &i_red_index);
@@ -112,6 +122,7 @@ void default_action(char *cmd, int argc, char *argv[]){
       int ofd = -1;
       int ifd = -1;
 
+      /* Set input and output files if redirection present. */
       if(o_red_index != -1)
       {
         ofd = open(argv[o_red_index],
@@ -123,6 +134,8 @@ void default_action(char *cmd, int argc, char *argv[]){
         }
         dup2(ofd,STDOUT_FILENO);
         close(ofd);
+        argv[o_red_index - 1] = '\0';
+        argv[o_red_index] = '\0';
       }
       if(i_red_index != -1)
       {
@@ -134,14 +147,18 @@ void default_action(char *cmd, int argc, char *argv[]){
         }
         dup2(ifd,STDIN_FILENO);
         close(ifd);
+                
+        argv[i_red_index - 1] = '\0';
+        argv[i_red_index] = '\0';
       }    
 
       int err = execv(cmd, argv);
       printf("Error occured in execution: %d",err);
       exit(err);
     }
-    else{
-      if(argc > 1){
+    else{ //Parent
+      /* When a second argument (integer type) of time is given. */
+      if(argc > 1 && argv[1] != '\0' && isdigit(argv[1][0])){
         int time_to_run = atoi(argv[1]);
         sleep(time_to_run);
         int res = waitpid (child_pid, &status, WNOHANG);

@@ -26,7 +26,7 @@ void set_prompt(){
 }
 
 void init(){
-  printf("\nWelcome to ASP Shell\n");
+  printf("Welcome to ASP Shell\n");
   pw = getpwuid(getuid());
   homedir = pw->pw_dir;
 
@@ -89,12 +89,14 @@ int main(){
 
   init();
 
+  /* Takes input from console, parses it, handles it and repeat. */
   while(1){
     char *cmd_line;
 
     cmd_line = readline(prompt);
     if (strcmp(cmd_line,"") != 0)
     {
+      /* Save command to history. (Ring buffer of size HIS_CNT). */
       char *save_in_his = (char*) malloc(sizeof(char) * strlen(cmd_line));
       strcpy (save_in_his, cmd_line);
       

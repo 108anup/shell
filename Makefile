@@ -1,3 +1,12 @@
+## Makefile supports following:
+# make all # or link   - to compile and link
+# make build           - to build only
+# make clean           - to delete all output files
+# make cleanall        - to delete output files as well as TAGS and cscope files
+# make TAGS            - to create emacs TAGS
+# make cscope          - to create cscope files
+# make dependencies    - to install dependencies (debian system)
+
 # This is the main compiler
 CC = gcc
 
