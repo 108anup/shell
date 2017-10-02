@@ -4,3 +4,4 @@ cscope.*
 .vscode/
 bin/
 build/
+deps/
