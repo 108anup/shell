@@ -28,6 +28,7 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
 SOURCES = $(shell find $(SRCDIR) -type f -name "*.c")
 OBJECTS = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.c=.o))
+DEPS = $(patsubst $(SRCDIR)/%,$(DEPDIR)/%,$(SOURCES:.c=.d))
 
 OUTPUT_OPTION = -o $@
 COMPILE.c = $(CC) -c $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(WARNINGS)
@@ -58,7 +59,7 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c $(DEPDIR)/%.d
 $(DEPDIR)/%.d: ;
 .PRECIOUS: $(DEPDIR)/%.d
 
-include $(wildcard $(patsubst %,$(DEPDIR)/%.d,$(basename $(SRCS))))
+-include $(DEPS)
 
 TAGS:
 	find . -name "*.[chS]" | xargs etags -a
@@ -68,7 +69,6 @@ cscope:
 	cscope -b -q -k
 
 clean:
-	@echo "# Cleaning"
 	$(RM) -r -v $(BUILDDIR) $(OUTPUTDIR) $(DEPDIR)
 
 cleanall: clean
