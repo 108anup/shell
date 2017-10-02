@@ -7,78 +7,58 @@
 # make cscope          - to create cscope files
 # make dependencies    - to install dependencies (debian system)
 
-# This is the main compiler
 CC = gcc
+LD = ld
 
-# Source file directory
-SRCDIR = src
+SRCDIR := src
+INCDIR := inc
+BUILDDIR := build
+DEPDIR := deps
+OUTPUTDIR := bin
+TARGET := $(OUTPUTDIR)/shell
 
-# Include directories
-# Don't remove -I
-INC = -I inc
+VPATH = $(SRCDIR)
 
-# Build directory - to store object files
-BUILDDIR = build
+WARNINGS = -Wall -W -Wstrict-prototypes -Wmissing-prototypes -Wsystem-headers
+CFLAGS = -g
+CPPFLAGS = -I$(INCDIR)
+LDFLAGS =
+LDLIB = -lreadline
+DEPFLAGS = -MT $@ -MMD -MP -MF $(DEPDIR)/$*.Td
 
-# Output directory
-OUTPUT = bin
+SOURCES = $(shell find $(SRCDIR) -type f -name "*.c")
+OBJECTS = $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.c=.o))
 
-# Target or Executible file
-TARGET := $(OUTPUT)/shell
+OUTPUT_OPTION = -o $@
+COMPILE.c = $(CC) -c $(DEPFLAGS) $(CFLAGS) $(CPPFLAGS) $(WARNINGS)
+POSTCOMPILE = @mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d && touch $@
 
-# Source file extension
-SRCEXT = c
+$(shell mkdir -p $(DEPDIR) > /dev/null)
+$(shell mkdir -p $(BUILDDIR) > /dev/null)
+$(shell mkdir -p $(OUTPUTDIR) > /dev/null)
 
-# Compiler flags
-CFLAGS = -g -Wall
-
-# Include libraries
-LIB = -lreadline
-
-# Creating list of c files
-SOURCES := $(shell find $(SRCDIR) -type f -name "*.$(SRCEXT)")
-
-# Creating list of object files to be built
-OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-
-# Default task
 all: build link
 
-# Install dependencies
 dependencies:
-	@echo "# Installing dependencies:"
-	@sudo apt-get install libreadline-dev
-	@echo "# Install complete.\n"
+	sudo apt-get install libreadline-dev
 
-# Building (Compiling)
 build: $(OBJECTS)
-
-# Linking
 link: $(TARGET)
-
-# Cleaning binary and object files
-clean:
-	@echo "# Cleaning"
-	$(RM) -r -v $(BUILDDIR) $(OUTPUT)
-
-cleanall: clean
-	$(RM) -v cscope.* TAGS
-
-$(TARGET): $(OBJECTS)
-	@echo "# Linking"
-	@mkdir -p $(OUTPUT)
-	$(CC) $^ -o $(TARGET) $(LIB)
-	@echo "# Executable Binary: $(TARGET)"
-	@echo "# To run just invoke: ./$(TARGET)"
-
-$(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
-	@if [ ! -f $@ ]; then mkdir -p $@; rm -r $@; fi
-	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 .PHONY: clean TAGS install cscope
 
-help:
-	@echo 'make <all, clean, build, link, dependencies, TAGS, cscope>'
+$(TARGET): $(OBJECTS)
+	$(CC) $(LDFLAGS) $(OUTPUT_OPTION) $^ $(LDLIB)
+
+%.o: %.c
+$(BUILDDIR)/%.o: $(SRCDIR)/%.c $(DEPDIR)/%.d
+	$(COMPILE.c) $(OUTPUT_OPTION) $<
+	$(POSTCOMPILE)
+
+$(DEPDIR)/%.d: ;
+.PRECIOUS: $(DEPDIR)/%.d
+
+include $(wildcard $(patsubst %,$(DEPDIR)/%.d,$(basename $(SRCS))))
 
 TAGS:
 	find . -name "*.[chS]" | xargs etags -a
@@ -86,3 +66,13 @@ TAGS:
 cscope:
 	find . -name "*.[chS]" > cscope.files
 	cscope -b -q -k
+
+clean:
+	@echo "# Cleaning"
+	$(RM) -r -v $(BUILDDIR) $(OUTPUTDIR) $(DEPDIR)
+
+cleanall: clean
+	$(RM) -v cscope.* TAGS
+
+help:
+	@echo 'make <all, clean, build, link, dependencies, TAGS, cscope>'
