@@ -26,6 +26,7 @@ Wrote code for history, issue, docs
    ```
 
 ## Project Tree / Organization
+```
 shell                - Project root     
 |     
 ├── inc              - All .h files    
@@ -37,7 +38,8 @@ shell                - Project root
 └── src              - All .c files    
     ├── handler.c    - handles the parsed commands    
     ├── parse.c      - parses the commands passed     
-    └── shell.c      - basic shell logic (taking input invoking parses and handler)    
+    └── shell.c      - basic shell logic (taking input invoking parses and handler)  
+```
 
 ## Makefile commands
 make all # or link   - to compile and link   
